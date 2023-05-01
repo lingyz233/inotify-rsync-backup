@@ -2,6 +2,9 @@ TARGET=a.out
 C_SRC=$(wildcard *.c)
 C_OBJ=$(patsubst %.c,%.o,$(C_SRC))
 
+C_HEAD=$(wildcard *.h)
+C_HGCH=$(patsubst %,%.gch,$(C_HEAD))
+
 CFLAGS+=-O3 -mavx2 -mfma
 
 PKG_LIB=pkg-config --libs 
@@ -21,8 +24,11 @@ all : $(TARGET)
 $(TARGET) : $(C_OBJ)
 	gcc $^ -o $@ $(LUA_LIBS) $(LUA_CFLAGS) $(GLIB_LIBS) $(GLIB_CFLAGS) $(CFLAGS)
 
-$(C_OBJ) : %.o : %.c
-	gcc -c $^ $(LUA_CFLAGS) $(GLIB_CFLAGS) $(CFLAGS)
+$(C_OBJ) : %.o : %.c $(C_HGCH)
+	gcc -c $< $(LUA_CFLAGS) $(GLIB_CFLAGS) $(CFLAGS)
+
+$(C_HGCH) : %.gch : %
+	gcc $^
 
 clean :
-	rm -rf $(TARGET) *.o
+	rm -rf $(TARGET) $(C_HGCH) $(C_OBJ)
